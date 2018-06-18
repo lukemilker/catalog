@@ -1,9 +1,9 @@
 {
   "name": "MSM",
   "author": "Phal-anx",
-  "license": "CC BY-NC-ND 4.0",
+  "license": "MIT",
   "authorEmail": "phal.anx.art@gmail.com",
-  "sourceUrl": "https://github.com/Phal-anx/MSM",
-  "manualUrl": "https://github.com/Phal-anx/MSM/raw/master/Manual/Manual.pdf",
+  "sourceUrl": "https://github.com/mi-rack/MSM",
+  "manualUrl": "https://github.com/mi-rack/MSM/raw/master/Manual/Manual.pdf",
   "latestVersion": "0.6.0"
 }
