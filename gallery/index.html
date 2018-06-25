@@ -1,0 +1,164 @@
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>VCVRack/miRack modules with panel screenshots</title>
+
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.12.4/css/selectize.min.css" rel="stylesheet">
+
+	<style>
+		body { font-family: sans-serif; font-size: 14px; }
+		#panels > h2 { clear: both; }
+		#panels > h2 > span { font-size: 14px; font-weight: normal; margin-left: 10px; }
+		#panels > div {text-align: center; float: left; margin-right: 20px; margin-bottom: 20px; }
+		#panels > div > span { display: block; font-weight: bold; }
+
+		#topbar { text-align: center; }
+		#filters { display: inline-block; text-align: left; }
+
+		.filter { width: 250px; display: inline-block; padding: 0 10px; }
+		.filter > span { font-weight: bold; }
+		.selectize-control { margin-top:1px; }
+	</style>
+</head>
+<body>
+
+<div id="topbar">
+	<p>NOTE: Screenshots rendered in <a href="http://github.com/mi-rack/Rack">miRack</a> and may look slightly different to VCVRack (and in very rare cases may have rendering issues).</p>
+
+	<div id="filters">
+	<div class="filter">
+		<span>Author</span>
+		<select id="authors">
+		<option value="">All</option>
+		</select>
+	</div>
+
+	or
+
+	<div class="filter">
+		<span>Tag</span>
+		<select id="tags">
+		<option value="">All</option>
+		</select>
+	</div>
+
+	or
+
+	<div class="filter">
+		<span>Size</span>
+		<select id="sizes">
+		<option value="">All</option>
+		</select>
+	</div>
+</div>
+
+	<hr>
+</div>
+
+<div id="panels"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.12.4/js/standalone/selectize.min.js"></script>
+<script src="modules.js"></script>
+<script>
+	function addCount(a, v) {
+		if (!a[v])
+			a[v] = 1;
+		else
+			a[v]++;
+	}
+
+	function applyFilters() {
+		var $panels = $('#panels');
+		$panels.empty();
+
+		var a = $('#authors').val();
+		var s = $('#sizes').val();
+		var t = $('#tags').val();
+
+		var _a = null;
+		for (var j in db.plugins) {
+			var plugin = db.plugins[j];
+			
+			for (var k in plugin.models) {
+				var model = plugin.models[k];
+
+				if (a && a != model.author)
+					continue;
+				if (s && s != Math.round(model.size))
+					continue;
+				if (t && model.tags.indexOf(t) == -1)
+					continue;
+
+				var img = plugin.slug + '/' + model.slug + '.png';
+
+				if (_a != model.author) {
+					var $hdr = $('<h2>' + 
+						(_a=model.author) + 
+						(plugin.manual ? '<span><a href="'+plugin.manual+'">manual</a></span>' : '') +
+						'</h2>');
+					$hdr.appendTo($panels);
+				}
+
+				var $el = $('<div><span>'+model.name+'</span><img src="'+img+'" style="width:'+(model.size*15)+'px"></div>');
+				$el.appendTo($panels);
+			}
+		}		
+	}
+
+	function makeFilters() {
+		var _a = {};
+		var $a = $('#authors');
+
+		var _t = {};
+		var $t = $('#tags');
+
+		var _s = {};
+		var $s = $('#sizes');
+
+		for (var j in db.plugins) {
+			var plugin = db.plugins[j];
+			
+			for (var k in plugin.models) {
+				var model = plugin.models[k];
+
+				addCount(_a, model.author);
+				addCount(_s, model.size);
+
+				for (var i in model.tags)
+					addCount(_t, model.tags[i]);
+			}
+		}
+
+		var _ak = Object.keys(_a).sort();
+		var _sk = Object.keys(_s).sort(function(a,b) {
+			return +a > +b;
+		});
+		var _tk = Object.keys(_t).sort();
+
+		for (var j in _ak)
+			$('<option value="'+_ak[j]+'">'+_ak[j]+' ('+_a[_ak[j]]+')</option>').appendTo($a);		
+		for (var j in _sk)
+			$('<option value="'+Math.round(_sk[j])+'">'+Math.round(_sk[j])+'HP ('+_s[_sk[j]]+')</option>').appendTo($s);		
+		for (var j in _tk)
+			$('<option value="'+_tk[j]+'">'+_tk[j]+' ('+_t[_tk[j]]+')</option>').appendTo($t);		
+	}
+
+	makeFilters();
+	applyFilters();
+
+	$('#authors, #sizes, #tags, #search').selectize({ allowEmptyOption:false }).on('change', function(ev) {
+		if (ev.target.id != 'authors')
+			$('#authors')[0].selectize.setValue('', true);
+		if (ev.target.id != 'sizes')
+			$('#sizes')[0].selectize.setValue('', true);
+		if (ev.target.id != 'tags')
+			$('#tags')[0].selectize.setValue('', true);
+
+		applyFilters();
+	});
+</script>
+
+
+</body>
+</html>
